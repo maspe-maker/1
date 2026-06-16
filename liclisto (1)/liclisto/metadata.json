@@ -1,0 +1,6 @@
+{
+  "name": "LicListo",
+  "description": "HUB de gestión de expedientes, plazos fatales y análisis legal con IA para despachos jurídicos mexicanos.",
+  "version": "1.0.0",
+  "requestFramePermissions": []
+}

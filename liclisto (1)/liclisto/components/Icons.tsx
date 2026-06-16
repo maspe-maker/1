@@ -1,0 +1,35 @@
+// ─────────────────────────────────────────────────────────────
+// LicListo · Contenedor central de iconos vectoriales
+// Un solo punto de importación: si mañana cambia la librería,
+// solo se toca este archivo.
+// ─────────────────────────────────────────────────────────────
+export {
+  Scale as IconScale,
+  Gavel as IconGavel,
+  FolderOpen as IconFolder,
+  CalendarDays as IconCalendar,
+  Clock as IconClock,
+  AlertTriangle as IconAlert,
+  FileText as IconFile,
+  Upload as IconUpload,
+  Sparkles as IconAI,
+  Search as IconSearch,
+  Settings as IconSettings,
+  LogOut as IconLogOut,
+  X as IconClose,
+  ChevronLeft as IconBack,
+  ChevronRight as IconNext,
+  Printer as IconPrint,
+  Trash2 as IconTrash,
+  Merge as IconMerge,
+  Plus as IconPlus,
+  Mail as IconMail,
+  Eye as IconEye,
+  Activity as IconActivity,
+  CheckCircle2 as IconCheck,
+  Briefcase as IconBriefcase,
+  Users as IconUsers,
+  BookOpen as IconLaw,
+  Loader2 as IconSpinner,
+  Download as IconDownload,
+} from 'lucide-react';

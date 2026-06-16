@@ -1,0 +1,71 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────
+// LicListo · Row-Level Security
+// Cada documento de /cases pertenece a UN usuario (campo userId).
+// Nadie puede leer, modificar ni re-asignar expedientes ajenos.
+// ─────────────────────────────────────────────────────────────
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Dueño del documento ya existente
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    // En creación: el userId DEBE venir y DEBE ser el del autenticado
+    function uidIsSelf() {
+      return request.resource.data.userId == request.auth.uid;
+    }
+
+    // En actualización: el userId no puede transferirse a otra cuenta
+    function uidNotModified() {
+      return request.resource.data.userId == resource.data.userId;
+    }
+
+    function isValidUser(data) {
+      return data.email is string && data.email.size() > 0 && data.email.size() < 200 &&
+             data.role in ['user', 'admin'] &&
+             data.createdAt is string &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 200)) &&
+             (!('photoURL' in data)    || (data.photoURL is string && data.photoURL.size() < 2000));
+    }
+
+    function isValidCase(data) {
+      return data.caseNumber is string && data.caseNumber.size() > 0 && data.caseNumber.size() < 120 &&
+             data.court is string && data.court.size() < 300 &&
+             data.trialType is string && data.trialType.size() < 150;
+    }
+
+    // ── Perfiles de usuario ──────────────────────────────────
+    match /users/{userId} {
+      allow read:   if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data)
+                    && request.resource.data.role == 'user'; // nadie se autoproclama admin
+      allow update: if isOwner(userId) && isValidUser(request.resource.data)
+                    && request.resource.data.role == resource.data.role; // rol inmutable desde cliente
+      allow delete: if false;
+    }
+
+    // ── Expedientes (aislamiento total por dueño) ────────────
+    match /cases/{caseId} {
+      allow read:   if isDocOwner();
+      allow create: if isAuthenticated() && uidIsSelf() && isValidCase(request.resource.data);
+      allow update: if isDocOwner() && uidNotModified() && isValidCase(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+
+    // Todo lo no listado queda denegado por defecto.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
